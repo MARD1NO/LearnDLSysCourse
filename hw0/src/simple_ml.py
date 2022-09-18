@@ -191,23 +191,16 @@ def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
     ### BEGIN YOUR CODE
     sample_num = X.shape[0]
     iter_num = sample_num // batch
-    print("iter num is: ", iter_num)
+    print("Iter num is: ", iter_num)
     for iter in range(iter_num):
-        iter_x = X[iter: (iter+1) * batch, :]
-        iter_y = y[iter: (iter+1) * batch]
-
+        print("Now iter is: ", iter)
+        iter_x = X[iter * batch: (iter+1) * batch, :]
+        iter_y = y[iter * batch: (iter+1) * batch]
         Z = np.matmul(iter_x, theta)
-        # print("Z is: ", Z)
         loss = softmax_loss(Z, iter_y)
-        print("Loss is: ", loss)
-
         # Compute Cross Entropy Grad
-        # max_val = np.max(Z)
-        # cross_entropy_grad = np.exp(Z-max_val) / np.sum(np.exp(Z-max_val), axis=1, keepdims=True)
-
-        cross_entropy_grad = np.exp(Z) / np.sum(np.exp(Z), axis=1, keepdims=True)
-
-
+        max_val = np.max(Z)
+        cross_entropy_grad = np.exp(Z-max_val) / np.sum(np.exp(Z-max_val), axis=1, keepdims=True)
         for idx in range(batch):
             cross_entropy_grad[idx, iter_y[idx]] -= 1
         # Assume we reduce mean
@@ -216,9 +209,6 @@ def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
         theta_grad = np.matmul(np.transpose(iter_x), cross_entropy_grad)
         # Update Parameter
         theta -= lr * theta_grad
-        # print("Theta is: ", theta)
-        # raise Exception
-
     ### END YOUR CODE
 
 
@@ -301,7 +291,7 @@ if __name__ == "__main__":
 
 
     # print("Training softmax regression")
-    train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr = 0.02, batch=100)
+    train_softmax(X_tr, y_tr, X_te, y_te, epochs=1, lr = 0.02, batch=100)
     #
     # print("\nTraining two layer neural network w/ 100 hidden units")
     # train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr = 0.2)
