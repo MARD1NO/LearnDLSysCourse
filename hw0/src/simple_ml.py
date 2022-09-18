@@ -166,8 +166,10 @@ def softmax_loss(Z, y):
         Average softmax loss over the sample.
     """
     ### BEGIN YOUR CODE
-    softmax_result = np.exp(Z[range(Z.shape[0]), y]) / np.sum(np.exp(Z), axis=1, keepdims=True)
-    return np.mean(-np.log(softmax_result))
+    def softmax(x):
+        return np.exp(x) / np.sum(np.exp(x), axis=1, keepdims=True)
+
+    return np.mean(-np.log(softmax(Z)[np.indices(y.shape)[0], y]))
     ### END YOUR CODE
 
 
@@ -191,18 +193,20 @@ def softmax_regression_epoch(X, y, theta, lr = 0.1, batch=100):
     ### BEGIN YOUR CODE
     sample_num = X.shape[0]
     iter_num = sample_num // batch
-    print("Iter num is: ", iter_num)
     for iter in range(iter_num):
-        print("Now iter is: ", iter)
         iter_x = X[iter * batch: (iter+1) * batch, :]
         iter_y = y[iter * batch: (iter+1) * batch]
         Z = np.matmul(iter_x, theta)
-        loss = softmax_loss(Z, iter_y)
+        # loss = softmax_loss(Z, iter_y)
         # Compute Cross Entropy Grad
         max_val = np.max(Z)
         cross_entropy_grad = np.exp(Z-max_val) / np.sum(np.exp(Z-max_val), axis=1, keepdims=True)
-        for idx in range(batch):
-            cross_entropy_grad[idx, iter_y[idx]] -= 1
+        cross_entropy_grad[np.indices(iter_y.shape)[0], iter_y] -= 1
+        """
+        equal to
+        # for idx in range(batch):
+        #     cross_entropy_grad[idx, iter_y[idx]] -= 1
+        """
         # Assume we reduce mean
         cross_entropy_grad /= batch
         # Compute Theta grad, use Matmul
@@ -251,7 +255,6 @@ def train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr=0.5, batch=100,
                   cpp=False):
     """ Example function to fully train a softmax regression classifier """
     theta = np.zeros((X_tr.shape[1], y_tr.max()+1), dtype=np.float32)
-    # theta = np.random.uniform(-0.02, 0.02, (X_tr.shape[1], y_tr.max()+1)).astype(np.float32)
     print("| Epoch | Train Loss | Train Err | Test Loss | Test Err |")
     for epoch in range(epochs):
         if not cpp:
@@ -290,8 +293,8 @@ if __name__ == "__main__":
                              "data/t10k-labels-idx1-ubyte.gz")
 
 
-    # print("Training softmax regression")
-    train_softmax(X_tr, y_tr, X_te, y_te, epochs=1, lr = 0.02, batch=100)
+    print("Training softmax regression")
+    train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr = 0.2, batch=100)
     #
     # print("\nTraining two layer neural network w/ 100 hidden units")
     # train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr = 0.2)
