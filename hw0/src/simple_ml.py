@@ -239,7 +239,38 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    sample_num = X.shape[0]
+    iter_num = sample_num // batch
+    """
+    50, 5 matmul 5, 10 -> 50, 10
+    50, 10 matmul 10, 3 -> 50, 3
+    """
+    for iter in range(iter_num):
+        iter_x = X[iter * batch: (iter+1) * batch, :]
+        iter_y = y[iter * batch: (iter+1) * batch]
+        Z1 = np.matmul(iter_x, W1)
+        relu_mask = Z1 > 0 
+        relu_Z1 = Z1 * relu_mask
+        Z2 = np.matmul(relu_Z1, W2)
+        # loss = softmax_loss(Z, iter_y)
+        # Compute Cross Entropy Grad
+        max_val = np.max(Z2)
+        cross_entropy_grad = np.exp(Z2-max_val) / np.sum(np.exp(Z2-max_val), axis=1, keepdims=True)
+        cross_entropy_grad[np.indices(iter_y.shape)[0], iter_y] -= 1
+        """
+        equal to
+        # for idx in range(batch):
+        #     cross_entropy_grad[idx, iter_y[idx]] -= 1
+        """
+        # Assume we reduce mean
+        cross_entropy_grad /= batch
+        # Compute W1 W2 grad, use Matmul
+        W2_grad = np.matmul(np.transpose(relu_Z1), cross_entropy_grad)
+        relu_grad = np.matmul(cross_entropy_grad, np.transpose(W2)) * relu_mask 
+        W1_grad = np.matmul(np.transpose(iter_x), relu_grad)
+        # Update Parameter
+        W1 -= lr * W1_grad
+        W2 -= lr * W2_grad
     ### END YOUR CODE
 
 
@@ -295,6 +326,6 @@ if __name__ == "__main__":
 
     print("Training softmax regression")
     train_softmax(X_tr, y_tr, X_te, y_te, epochs=10, lr = 0.2, batch=100)
-    #
-    # print("\nTraining two layer neural network w/ 100 hidden units")
-    # train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=100, epochs=20, lr = 0.2)
+    
+    print("\nTraining two layer neural network w/ 400 hidden units")
+    train_nn(X_tr, y_tr, X_te, y_te, hidden_dim=400, epochs=20, lr = 0.2)

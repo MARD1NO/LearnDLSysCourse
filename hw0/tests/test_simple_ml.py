@@ -207,4 +207,6 @@ if __name__ == "__main__":
     # test_add()
     # test_parse_mnist()
     # test_softmax_loss()
-    test_softmax_regression_epoch()
+    # test_softmax_regression_epoch()
+
+    test_nn_epoch()
