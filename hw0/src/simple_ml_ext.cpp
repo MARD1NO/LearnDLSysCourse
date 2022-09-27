@@ -6,6 +6,63 @@
 namespace py = pybind11;
 
 
+void matmul(const float* x, const float* w, float* y, const size_t m, const size_t n, const size_t k){
+    /*
+    x: m, n
+    w: n, k
+    y: m, k
+    */
+    for(size_t m_idx = 0; m_idx < m; m_idx++){
+        for(size_t k_idx = 0; k_idx < k; k_idx++){
+            float accum = 0.0f; 
+            for(size_t n_idx = 0; n_idx < n; n_idx++){
+                float x_val = 0.0f; 
+                x_val = x[m_idx * n + n_idx]; 
+                float w_val = w[n_idx * k + k_idx]; 
+                accum += x_val * w_val; 
+            }
+            y[m_idx * k + k_idx] = accum; 
+        }
+    }
+}
+
+void compute_crossentropy_grad(const float* out, const unsigned char * label, float* grad, size_t batch, size_t classes){
+    for(size_t batch_idx = 0; batch_idx < batch; batch_idx++){
+        float accum = 0.0f; 
+        for(size_t class_idx = 0; class_idx < classes; class_idx++){
+            float out_val = out[batch_idx * classes + class_idx]; 
+            accum += std::exp(out_val); 
+        }
+        float grad_val = 0.0f; 
+        unsigned char label_val = label[batch_idx]; 
+        for(size_t class_idx = 0; class_idx < classes; class_idx++){
+            float out_val = out[batch_idx * classes + class_idx]; 
+            grad_val = std::exp(out_val) / accum; 
+            if(class_idx == label_val){
+                grad_val -= 1; 
+            }
+            // Reduce Mean
+            grad_val /= batch; 
+            grad[batch_idx * classes + class_idx] = grad_val; 
+        }
+    }
+}
+
+void transpose(const float* in, float* out, size_t m, size_t n){
+    for(size_t m_idx = 0; m_idx < m; m_idx++){
+        for(size_t n_idx = 0; n_idx < n; n_idx++){
+            out[n_idx * m + m_idx] = in[m_idx * n + n_idx]; 
+        }
+    }
+}
+
+
+void update(const float* grad, float* w, float lr, size_t elem_cnt){
+    for(size_t i = 0; i < elem_cnt; i++){
+        w[i] -= lr * grad[i]; 
+    }
+}
+
 void softmax_regression_epoch_cpp(const float *X, const unsigned char *y,
 								  float *theta, size_t m, size_t n, size_t k,
 								  float lr, size_t batch)
@@ -33,7 +90,31 @@ void softmax_regression_epoch_cpp(const float *X, const unsigned char *y,
      */
 
     /// BEGIN YOUR CODE
+    size_t sample_num = m; 
+    size_t iter_num = sample_num / batch; 
+    float* matmul_result; 
+    matmul_result = (float*)malloc(batch*k*sizeof(float)); 
+    float* cross_entropy_grad; 
+    cross_entropy_grad = (float*)malloc(batch*k*sizeof(float)); 
+    float* theta_grad; 
+    theta_grad = (float*)malloc(n*k*sizeof(float)); 
+    float* transposed_x; 
+    transposed_x = (float*)malloc(n*batch*sizeof(float)); 
 
+    for(size_t iter = 0; iter < iter_num; iter++){
+        const float* iter_x = X + iter * batch * n; 
+        const unsigned char * iter_y = y + iter * batch; 
+        matmul(iter_x, theta, matmul_result, batch, n, k); 
+        compute_crossentropy_grad(matmul_result, iter_y, cross_entropy_grad, batch, k); 
+        transpose(iter_x, transposed_x, batch, n); 
+        matmul(transposed_x, cross_entropy_grad, theta_grad, n, batch, k); 
+        update(theta_grad, theta, lr, n * k); 
+    }
+
+    free(matmul_result); 
+    free(cross_entropy_grad); 
+    free(theta_grad); 
+    free(transposed_x); 
     /// END YOUR CODE
 }
 
