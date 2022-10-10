@@ -399,7 +399,17 @@ def compute_gradient_of_variables(output_tensor, out_grad):
     reverse_topo_order = list(reversed(find_topo_sort([output_tensor])))
 
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    for node in reverse_topo_order: 
+        autodiff_joint = node_to_output_grads_list[node]
+        v_i = sum(autodiff_joint)
+        node.grad = v_i 
+
+        if node.op is None: 
+            continue 
+        node_grad_list = node.op.gradient(v_i, node)
+        for node_input, node_grad in zip(node.inputs, node_grad_list): 
+            node_to_output_grads_list.setdefault(node_input, list())
+            node_to_output_grads_list[node_input] = node_grad
     ### END YOUR SOLUTION
 
 
@@ -412,14 +422,22 @@ def find_topo_sort(node_list: List[Value]) -> List[Value]:
     sort.
     """
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    topo_order = []
+    visited = set()
+    topo_sort_dfs(node_list[0], visited, topo_order)
+    return topo_order
     ### END YOUR SOLUTION
 
 
 def topo_sort_dfs(node, visited, topo_order):
     """Post-order DFS"""
     ### BEGIN YOUR SOLUTION
-    raise NotImplementedError()
+    for node_input in node.inputs: 
+        topo_sort_dfs(node_input, visited, topo_order)
+    
+    if node not in visited: 
+        visited.add(node)
+        topo_order.append(node)
     ### END YOUR SOLUTION
 
 
