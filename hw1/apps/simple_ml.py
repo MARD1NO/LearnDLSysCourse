@@ -65,11 +65,9 @@ def softmax_loss(Z, y_one_hot):
     n = Z.shape[0]
     x = exp(Z).sum(1)
     y = log(x).sum()
-    t1, t2 = type(Z), type(y_one_hot)
     z = (Z * y_one_hot).sum()
     loss = y - z
     return loss / n
-    
     ### END YOUR SOLUTION
 
 
