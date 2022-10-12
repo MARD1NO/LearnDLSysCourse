@@ -5,7 +5,7 @@ from simple_ml import *
 import numdifftools as nd
 
 import numpy as np
-import mugrade
+# import mugrade
 import needle as ndl
 
 
@@ -654,3 +654,33 @@ def submit_nn_epoch_ndl():
     mugrade.submit(np.linalg.norm(W1.numpy()))
     mugrade.submit(np.linalg.norm(W2.numpy()))
     mugrade.submit(loss_err(ndl.Tensor(np.maximum(X@W1.numpy(),0))@W2, y))
+
+if __name__ == "__main__": 
+    # test_divide_forward()
+    # test_divide_scalar_forward()
+    # test_matmul_forward()
+    # test_summation_forward()
+    # test_broadcast_to_forward()
+    # test_reshape_forward()
+    # test_negate_forward()
+    # test_transpose_forward()
+    
+    # test_divide_backward()
+    # test_divide_scalar_backward()
+    # test_matmul_simple_backward()
+    # test_matmul_batched_backward()
+    # test_reshape_backward()
+    # test_negate_backward()
+    # test_transpose_backward()
+    # test_broadcast_to_backward()
+    # test_summation_backward()
+
+    # test_topo_sort()
+    # test_compute_gradient()
+    
+    test_softmax_loss_ndl()
+    test_nn_epoch_ndl()
+    
+
+
+

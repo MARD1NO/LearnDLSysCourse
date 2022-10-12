@@ -406,10 +406,10 @@ def compute_gradient_of_variables(output_tensor, out_grad):
 
         if node.op is None: 
             continue 
-        node_grad_list = node.op.gradient(v_i, node)
+        node_grad_list = node.op.gradient_as_tuple(v_i, node)
         for node_input, node_grad in zip(node.inputs, node_grad_list): 
             node_to_output_grads_list.setdefault(node_input, list())
-            node_to_output_grads_list[node_input] = node_grad
+            node_to_output_grads_list[node_input].append(node_grad)
     ### END YOUR SOLUTION
 
 
