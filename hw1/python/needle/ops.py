@@ -188,7 +188,7 @@ class BroadcastTo(TensorOp):
         input_shape = node.inputs[0].shape
         input_shape_len = len(input_shape) - 1
         self.reduce_dim = []
-        for idx in range(len(self.shape)-1, -1, -1): 
+        for idx in range(len(out_grad.shape)-1, -1, -1): 
             if input_shape_len < 0: 
                 self.reduce_dim.append(idx)
                 continue
