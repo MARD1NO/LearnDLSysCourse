@@ -1,5 +1,6 @@
 """Operatpr table."""
 # Global operator table.
+from functools import reduce
 from numbers import Number
 from typing import Optional, List
 from .autograd import NDArray
@@ -389,12 +390,32 @@ class LogSumExp(TensorOp):
 
     def compute(self, Z):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        max_val = array_api.max(Z, axis=self.axes, keepdims=True)
+        no_keep_dims_max_val = array_api.max(Z, axis=self.axes, keepdims=False)
+        exp_val = array_api.exp(Z - max_val)
+        out = array_api.log(array_api.sum(exp_val, axis=self.axes)) + no_keep_dims_max_val
+        return out
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        input_tensor = node.inputs[0].cached_data
+        max_val = array_api.max(input_tensor, axis=self.axes, keepdims=True)
+        exp_val = array_api.exp(input_tensor - max_val)
+        sum_val = array_api.sum(exp_val, axis=self.axes)
+
+        log_grad = out_grad.cached_data / sum_val 
+
+        input_shape = input_tensor.shape
+        broadcast_shape = list(input_shape)
+        if self.axes: 
+            for i in self.axes: 
+                broadcast_shape[i] = 1
+        else: 
+            broadcast_shape = [1 for _ in range(len(broadcast_shape))] # (1, 1, 1, 1)
+        reduce_sum_grad = array_api.reshape(log_grad, tuple(broadcast_shape))
+        exp_grad = exp_val * reduce_sum_grad
+        return Tensor(exp_grad)
         ### END YOUR SOLUTION
 
 
