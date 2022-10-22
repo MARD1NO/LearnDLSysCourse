@@ -88,12 +88,23 @@ class Linear(Module):
         self.out_features = out_features
 
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.weight = Parameter(init.kaiming_uniform(in_features, out_features, nonlinearity="relu", dtype=dtype))
+        self.use_bias = bias
+        if bias: 
+            self.bias = Parameter(ops.reshape(init.kaiming_uniform(out_features, 1, nonlinearity="relu", dtype=dtype), (1, out_features)))
         ### END YOUR SOLUTION
 
     def forward(self, X: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        out = ops.matmul(X, self.weight)
+        out_shape_len = len(out.shape)
+        broadcast_shape = []
+        for i in range(out_shape_len): 
+            broadcast_shape.append(out.shape[i])
+        if self.use_bias: 
+            broadcast_bias = ops.broadcast_to(self.bias, shape=tuple(broadcast_shape))
+            out = ops.add(out, broadcast_bias)
+        return out 
         ### END YOUR SOLUTION
 
 
