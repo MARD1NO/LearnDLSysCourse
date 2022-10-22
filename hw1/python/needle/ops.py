@@ -75,13 +75,13 @@ class PowerScalar(TensorOp):
 
     def compute(self, a: NDArray) -> NDArray:
         ### BEGIN YOUR SOLUTION
-        return array_api.exp(a, self.scalar)
+        return array_api.power(a, self.scalar)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         input_a = node.inputs
-        return out_grad * self.scalar * array_api.exp(input_a, self.scalar - 1)
+        return out_grad * self.scalar * array_api.power(input_a, self.scalar - 1)
         ### END YOUR SOLUTION
 
 
@@ -307,8 +307,6 @@ class Exp(TensorOp):
 def exp(a):
     return Exp()(a)
 
-
-# TODO
 class ReLU(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
