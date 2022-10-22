@@ -81,7 +81,7 @@ class PowerScalar(TensorOp):
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         input_a = node.inputs
-        return out_grads * self.scalar * array_api.exp(input_a, self.scalar - 1)
+        return out_grad * self.scalar * array_api.exp(input_a, self.scalar - 1)
         ### END YOUR SOLUTION
 
 
