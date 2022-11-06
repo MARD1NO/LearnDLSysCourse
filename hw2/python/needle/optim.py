@@ -26,7 +26,7 @@ class SGD(Optimizer):
     def step(self):
         ### BEGIN YOUR SOLUTION
         for param in self.params: 
-            grad = self.u.get(param, 0) * self.momentum + (1 - self.momentum) * (param.grad + self.weight_decay * param.data)
+            grad = self.u.get(param, 0) * self.momentum + (1 - self.momentum) * (param.grad.detach() + self.weight_decay * param.detach())
             grad = ndl.Tensor(grad, dtype=param.dtype)
             self.u[param] = grad 
             param.data -= self.lr * grad 
@@ -58,7 +58,7 @@ class Adam(Optimizer):
         ### BEGIN YOUR SOLUTION
         self.t += 1
         for param in self.params: 
-            grad_with_wd = param.grad + self.weight_decay * param.data
+            grad_with_wd = param.grad.detach() + self.weight_decay * param.detach()
             new_m = self.m.get(param, 0) * self.beta1 + (1 - self.beta1) * grad_with_wd
             new_v = self.v.get(param, 0) * self.beta2 + (1 - self.beta2) * grad_with_wd * grad_with_wd
             self.m[param] = new_m
