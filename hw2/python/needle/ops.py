@@ -268,6 +268,8 @@ def broadcast_to(a, shape):
 class Summation(TensorOp):
     def __init__(self, axes: Optional[tuple] = None):
         self.axes = axes
+        if isinstance(self.axes, int): 
+            self.axes = tuple([self.axes])
 
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
@@ -387,7 +389,9 @@ def relu(a):
 class LogSumExp(TensorOp):
     def __init__(self, axes: Optional[tuple] = None):
         self.axes = axes
-
+        if isinstance(self.axes, int): 
+            self.axes = tuple([self.axes])
+    
     def compute(self, Z):
         ### BEGIN YOUR SOLUTION
         max_val = array_api.max(Z, axis=self.axes, keepdims=True)
@@ -400,6 +404,7 @@ class LogSumExp(TensorOp):
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         input_tensor = node.inputs[0].cached_data
+        #TODO maybe there exist a simple implementation
         max_val = array_api.max(input_tensor, axis=self.axes, keepdims=True)
         exp_val = array_api.exp(input_tensor - max_val)
         sum_val = array_api.sum(exp_val, axis=self.axes)
