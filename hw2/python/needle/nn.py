@@ -164,8 +164,8 @@ class BatchNorm1d(Module):
         ### BEGIN YOUR SOLUTION
         self.weight = Parameter(init.ones(dim))
         self.bias = Parameter(init.zeros(dim))
-        self.running_mean = Parameter(init.zeros(dim))
-        self.running_var = Parameter(init.ones(dim))
+        self.running_mean = init.zeros(dim)
+        self.running_var = init.ones(dim)
         ### END YOUR SOLUTION
 
 
@@ -215,7 +215,6 @@ class LayerNorm1d(Module):
         return out 
         ### END YOUR SOLUTION
 
-
 class Dropout(Module):
     def __init__(self, p = 0.5):
         super().__init__()
@@ -235,8 +234,6 @@ class Residual(Module):
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        return x + self.fn(x)
+        return ops.EWiseAdd()(x,self.fn(x))
         ### END YOUR SOLUTION
-
-
 
