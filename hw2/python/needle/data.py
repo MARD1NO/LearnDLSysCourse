@@ -2,7 +2,7 @@ import numpy as np
 from .autograd import Tensor
 
 from typing import Iterator, Optional, List, Sized, Union, Iterable, Any
-
+import gzip
 
 class Transform:
     def __call__(self, x):
@@ -24,11 +24,14 @@ class RandomFlipHorizontal(Transform):
         """
         flip_img = np.random.rand() < self.p
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        if flip_img: 
+            img = img[:, ::-1, :]
+        return img
         ### END YOUR SOLUTION
 
 
 class RandomCrop(Transform):
+
     def __init__(self, padding=3):
         self.padding = padding
 
@@ -40,9 +43,18 @@ class RandomCrop(Transform):
             H x W x C NAArray of cliped image
         Note: generate the image shifted by shift_x, shift_y specified below
         """
-        shift_x, shift_y = np.random.randint(low=-self.padding, high=self.padding+1, size=2)
+        shift_x, shift_y = np.random.randint(low=-self.padding,
+                                             high=self.padding + 1,
+                                             size=2)
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        H, W, C = img.shape
+        pad = np.zeros((H + 2 * self.padding, W + 2 * self.padding, C))
+        pad[self.padding:self.padding + H,
+            self.padding:self.padding + W, :] = img
+        x = self.padding + shift_x
+        y = self.padding + shift_y
+        crop = pad[x:x + H, y:y + W, :]
+        return crop
         ### END YOUR SOLUTION
 
 
@@ -98,16 +110,29 @@ class DataLoader:
         if not self.shuffle:
             self.ordering = np.array_split(np.arange(len(dataset)), 
                                            range(batch_size, len(dataset), batch_size))
+        else: 
+            arr = np.arange(len(dataset))
+            np.random.shuffle(arr)
+            self.ordering = np.array_split(
+                arr, range(batch_size, len(dataset), batch_size))
+        self.idx = -1 
+        self.total_num = len(self.dataset)
 
     def __iter__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return self 
         ### END YOUR SOLUTION
-        return self
 
     def __next__(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        self.idx += 1
+        if self.idx >= len(self.ordering):
+            self.idx = -1
+            raise StopIteration()
+        samples = self.dataset[self.ordering[self.idx]]
+        # samples = list(zip(*samples))
+        # ret = [np.concatenate([x]) for x in samples]
+        return [Tensor(x) for x in samples]
         ### END YOUR SOLUTION
 
 
@@ -119,17 +144,33 @@ class MNISTDataset(Dataset):
         transforms: Optional[List] = None,
     ):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        with gzip.open(image_filename, "rb") as f:
+            image = f.read()
+            X = np.frombuffer(image, dtype=np.uint8, offset=16).astype(np.float32)
+            X = X / 255
+            X = np.reshape(X, (-1, 28, 28, 1))
+
+        with gzip.open(label_filename, "rb") as f:
+            label = f.read()
+            y = np.frombuffer(label, dtype=np.uint8, offset=8)
+        
+        self.image = X 
+        self.label = y 
+        self.transforms = transforms
         ### END YOUR SOLUTION
 
     def __getitem__(self, index) -> object:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        img = self.image[index]
+        if self.transforms: 
+            for process in self.transforms: 
+                img = process(img)
+        return (img, self.label[index])
         ### END YOUR SOLUTION
 
     def __len__(self) -> int:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        return len(self.image)
         ### END YOUR SOLUTION
 
 class NDArrayDataset(Dataset):
